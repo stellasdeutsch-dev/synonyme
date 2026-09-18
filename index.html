@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Onest:wght@300;400;500;600&family=Urbanist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=10">
+<link rel="stylesheet" href="assets/css/style.css?v=12">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -80,7 +80,10 @@
     </div>
     <div class="hero-stage rv rv-d2" id="stage">
       <div class="glow"><span class="blob b1"></span><span class="blob b2"></span></div>
-      <div class="phone" id="heroPhone"><div class="screen"><video src="assets/vid/phone-vocab.mp4" poster="assets/vid/phone-vocab.jpg" muted loop playsinline autoplay preload="metadata"></video></div></div>
+      <div class="hero-laptop" id="heroPhone">
+        <div class="hl-lid"><div class="hl-cam"></div><div class="hl-scr"><img src="assets/img/a0-home.webp" alt="Главная страница платформы Stellas A0–A2 в Notion" fetchpriority="high"></div></div>
+        <div class="hl-base"><i></i></div>
+      </div>
       <div class="float f-words" data-depth="1.4"><div class="big"><span data-count="7500">0</span>+</div><small>слов с озвучкой и транскрипцией</small></div>
       <div class="float f-chip" data-depth="-1"><span class="av">🇩🇪</span>der Stammkunde<button class="say" data-say="der Stammkunde" aria-label="Послушать"><svg><use href="#i-say"/></svg></button></div>
       <div class="float f-guides" data-depth="1">
@@ -605,6 +608,6 @@
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Просмотр"><img alt=""><button aria-label="Закрыть">✕</button></div>
 <div class="toast" id="toast"></div>
 
-<script src="assets/js/app.js?v=10" defer></script>
+<script src="assets/js/app.js?v=12" defer></script>
 </body>
 </html>

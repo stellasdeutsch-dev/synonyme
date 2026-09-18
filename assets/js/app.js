@@ -68,7 +68,7 @@ function observeReveal(root = document) { $$('.rv:not(.in), #neighbors, #flow', 
 const cio = new IntersectionObserver(es => es.forEach(e => {
   if (!e.isIntersecting) return;
   const el = e.target, to = +el.dataset.count, t0 = performance.now(), d = reduce ? 1 : 1600;
-  const fmt = n => n >= 1000 ? n.toLocaleString('de-DE') : n;
+  const fmt = n => n >= 1000 ? n.toLocaleString('ru-RU') : n;
   (function tick(t) { const p = Math.min(1, (t - t0) / d), k = 1 - Math.pow(1 - p, 4); el.textContent = fmt(Math.round(to * k)); if (p < 1) requestAnimationFrame(tick); })(t0);
   cio.unobserve(el);
 }), { threshold: .6 });
@@ -120,7 +120,7 @@ if (!reduce) {
 }
 function heroFrame() {
   const y = Math.min(scrollY, 900);
-  phone.style.transform = `rotateY(${px * 14}deg) rotateX(${-py * 10}deg) translateY(${-y * .06}px)`;
+  phone.style.transform = `perspective(1200px) rotateY(${px * 12}deg) rotateX(${-py * 8}deg) translateY(${-y * .06}px)`;
   floats.forEach(f => { const d = +f.dataset.depth; f.style.transform = `translate3d(${px * 22 * d}px, ${py * 18 * d - y * .12 * d}px, 0)`; });
   bgword.style.transform = `translateX(calc(-50% - ${y * .25}px))`;
 }
@@ -428,7 +428,7 @@ function calc() {
   // половина времени — слова (≈30 секунд на слово), половина — гайды (≈25 минут на гайд), 90 дней
   const m = +cr.value;
   $('#calcMin').textContent = m;
-  $('#calcWords').textContent = Math.min(7500, m * 90).toLocaleString('de-DE');
+  $('#calcWords').textContent = Math.min(7500, m * 90).toLocaleString('ru-RU');
   $('#calcGuides').textContent = Math.min(340, Math.max(1, Math.round(m / 2 * 90 / 25)));
   cr.style.setProperty('--p', ((m - 5) / 55 * 100) + '%');
   const pct = Math.min(1, m * 90 / 7500); $('#calcP').style.strokeDashoffset = 201 * (1 - pct); $('#calcPct').textContent = Math.round(pct * 100) + '%';
@@ -511,9 +511,41 @@ addEventListener('keydown', e => { if (e.key === 'Escape') { lb.classList.remove
 /* ---------- faq ---------- */
 $$('.qa button').forEach(b => b.addEventListener('click', () => { const q = b.parentElement, o = q.classList.contains('open'); $$('.qa').forEach(x => x.classList.remove('open')); if (!o) q.classList.add('open'); }));
 
+/* ---------- mp4 + webm sources ---------- */
+$$('video[src$=".mp4"]').forEach(v => {
+  const src = v.getAttribute('src'); v.removeAttribute('src');
+  v.innerHTML = `<source src="${src}" type='video/mp4; codecs="avc1.640028"'><source src="${src.replace(/\.mp4$/, '.webm')}" type="video/webm">`;
+});
+
+/* ---------- video -> canvas mirror (кадры видны даже там, где видеослой не рисуется) ---------- */
+function mirror(v) {
+  const c = document.createElement('canvas'); c.className = 'vmirror'; c.setAttribute('aria-hidden', 'true');
+  v.after(c);
+  const ctx = c.getContext('2d'); let on = false;
+  const draw = () => {
+    if (!on) return;
+    if (v.readyState >= 2 && v.videoWidth) {
+      const dpr = Math.min(2, devicePixelRatio || 1), W = c.clientWidth, H = c.clientHeight;
+      if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+      const vw = v.videoWidth, vh = v.videoHeight, fit = getComputedStyle(v).objectFit;
+      const k = fit === 'contain' ? Math.min(c.width / vw, c.height / vh) : Math.max(c.width / vw, c.height / vh);
+      const dw = vw * k, dh = vh * k;
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(v, (c.width - dw) / 2, 0, dw, dh);
+      c.classList.add('ready');
+    }
+    v.requestVideoFrameCallback ? v.requestVideoFrameCallback(draw) : requestAnimationFrame(draw);
+  };
+  return { start() { if (!on) { on = true; draw(); } }, stop() { on = false; } };
+}
+
 /* ---------- autoplay videos ---------- */
-const vio = new IntersectionObserver(es => es.forEach(e => { const v = e.target; if (e.isIntersecting) { if (v.preload === 'none') v.preload = 'auto'; v.play().catch(() => {}); } else v.pause(); }), { threshold: .25 });
-$$('video[data-autoplay], #heroPhone video').forEach(v => vio.observe(v));
+const vio = new IntersectionObserver(es => es.forEach(e => {
+  const v = e.target; v._m = v._m || mirror(v);
+  if (e.isIntersecting) { if (v.preload === 'none') v.preload = 'auto'; v.play().then(() => v._m.start()).catch(() => {}); v._m.start(); }
+  else { v.pause(); v._m.stop(); }
+}), { threshold: .25 });
+$$('video[data-autoplay]').forEach(v => vio.observe(v));
 
 /* ---------- magnetic ---------- */
 if (fine && !reduce) $$('.magnetic').forEach(b => {
